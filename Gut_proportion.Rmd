@@ -16,29 +16,29 @@ library(patchwork)
 
 ### Data loading
 ```{r}
-# reading "gut_data.xlsx"
-d <- read_excel("gut_data.xlsx", sheet="Sheet1")
+# reading excel file (see supplementary Data 4 in a paper "Special food of long-lived kings and queens in termites")
+d <- read_excel("Supplementary Data 4.xlsx", sheet="Sheet1")
 d <- transform(d, caste=factor(caste, levels = c("mW","fW","mSol","fSol","PK","SQ")))
 ```
 
 ### Graph plotting
 ```{r}
 # volume of midgut
-g1 <- ggplot(d, aes(x=factor(caste), y=midGut_vol)) 
+g1 <- ggplot(d, aes(x=factor(caste), y=midGut_vol..mm.3.)) 
 g1 <- g1 + theme_classic()
 g1 <- g1 + geom_boxplot(outlier.colour=NA)
 g1 <- g1 + geom_jitter(size=1,aes(col=caste),shape=16)
 g1 <- g1 + xlab("Caste") + ylab("Volume of midgut (mm^3)") + ylim(0,NA)
 
 # volume of hindgut
-g2 <- ggplot(d, aes(x=factor(caste), y=hindGut_vol)) 
+g2 <- ggplot(d, aes(x=factor(caste), y=hindGut_vol..mm.3.)) 
 g2 <- g2 + theme_classic()
 g2 <- g2 + geom_boxplot(outlier.colour=NA)
 g2 <- g2 + geom_jitter(size=1,aes(col=caste),shape=16)
 g2 <- g2 + xlab("Caste") + ylab("Volume of hindgut (mm^3)") + ylim(0,0.8)
 
 # volume ratio of midgut to hindgut
-g3 <- ggplot(d, aes(x=factor(caste), y=mGut_ratio)) 
+g3 <- ggplot(d, aes(x=factor(caste), y=volume_ratio_of_midgut_to_hindgut)) 
 g3 <- g3 + theme_classic()
 g3 <- g3 + geom_boxplot(outlier.colour=NA)
 g3 <- g3 + geom_jitter(size=1,aes(col=caste),shape=16)
@@ -54,11 +54,11 @@ ggsave(plot=gset, height=6, width=6, dpi=200, filename="Fig4i,j,k.pdf", useDingb
 ```{r}
 ## for volume ratio of midgut to hindgut
 # GLMM
-res1 <- lmer(mGut_ratio ~ body_weight + caste + (1|colony), data=d)
+res1 <- lmer(volume_ratio_of_midgut_to_hindgut ~ body_weight..mg. + caste + (1|colony_id), data=d)
 summary(res1)
 # likelihood ratio test
-fit1 <- lmer(mGut_ratio ~ body_weight + caste + (1|colony), data=d)
-fit2 <- lmer(mGut_ratio ~ body_weight + 1 + (1|colony), data=d)
+fit1 <- lmer(volume_ratio_of_midgut_to_hindgut ~ body_weight..mg. + 1 + (1|colony_id), data=d)
+fit2 <- lmer(volume_ratio_of_midgut_to_hindgut ~ body_weight..mg. + caste + (1|colony_id), data=d)
 anova(fit1, fit2, test="Chisq") #尤度比検定
 # post-hoc test
 res2 <- glht(res1, linfct=mcp(caste="Tukey"))
@@ -66,11 +66,11 @@ summary(res2)
 
 ## for volume of midgut
 # GLMM
-res3 <- glmer(midGut_vol ~ body_weight + caste + (1|colony), family="Gamma", data=d)
+res3 <- glmer(midGut_vol..mm.3. ~ body_weight..mg. + caste + (1|colony_id), family="Gamma", data=d)
 summary(res3)
 # likelihood ratio test
-fit3 <- glmer(midGut_vol ~ body_weight + caste + (1|colony), family="Gamma", data=d)
-fit4 <- glmer(midGut_vol ~ body_weight + 1 + (1|colony), family="Gamma", data=d)
+fit3 <- glmer(midGut_vol..mm.3. ~ body_weight..mg. + 1 + (1|colony_id), family="Gamma", data=d)
+fit4 <- glmer(midGut_vol..mm.3. ~ body_weight..mg. + caste + (1|colony_id), family="Gamma", data=d)
 anova(fit3, fit4, test="Chisq") #尤度比検定
 # post-hoc test
 res4 <- glht(res3, linfct=mcp(caste="Tukey"))
@@ -78,11 +78,11 @@ summary(res4)
 
 ## volume of hindgut
 # GLMM
-res5 <- glmer(hindGut_vol ~ body_weight + caste + (1|colony), family="Gamma", data=d)
+res5 <- glmer(hindGut_vol..mm.3. ~ body_weight..mg. + caste + (1|colony_id), family="Gamma", data=d)
 summary(res5)
 # likelihood ratio test
-fit5 <- glmer(hindGut_vol ~ body_weight + caste + (1|colony), family="Gamma", data=d)
-fit6 <- glmer(hindGut_vol ~ body_weight + 1 + (1|colony), family="Gamma", data=d)
+fit5 <- glmer(hindGut_vol..mm.3. ~ body_weight..mg. + 1 + (1|colony_id), family="Gamma", data=d)
+fit6 <- glmer(hindGut_vol..mm.3. ~ body_weight..mg. + caste + (1|colony_id), family="Gamma", data=d)
 anova(fit5, fit6, test="Chisq") #尤度比検定
 # post-hoc test
 res6 <- glht(res5, linfct=mcp(caste="Tukey"))
