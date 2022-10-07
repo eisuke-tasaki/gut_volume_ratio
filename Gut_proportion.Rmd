@@ -14,65 +14,45 @@ library(lme4)
 library(patchwork)
 ```
 
-### データ読み込み
+### Data loading
 ```{r}
-#ディレクトリ指定
-setwd("~/desktop/実験データ/Royal_food/Gut_proportion/")
-
-# gut_data.xlsxの結果を読み込み
+# reading "gut_data.xlsx"
 d <- read_excel("gut_data.xlsx", sheet="Sheet1")
 d <- transform(d, caste=factor(caste, levels = c("mW","fW","mSol","fSol","PK","SQ")))
 ```
 
-### グラフ作図
+### Graph plotting
 ```{r}
-## グラフ作図
-# midgut_ratio
-g1 <- ggplot(d, aes(x=factor(caste), y=mGut_ratio)) 
+# volume of midgut
+g1 <- ggplot(d, aes(x=factor(caste), y=midGut_vol)) 
 g1 <- g1 + theme_classic()
 g1 <- g1 + geom_boxplot(outlier.colour=NA)
 g1 <- g1 + geom_jitter(size=1,aes(col=caste),shape=16)
-g1 <- g1 + xlab("Caste") + ylab("Midgut ratio") + ylim(0,1)
+g1 <- g1 + xlab("Caste") + ylab("Volume of midgut (mm^3)") + ylim(0,NA)
 
-# midgut
-g2 <- ggplot(d, aes(x=factor(caste), y=midGut_vol)) 
+# volume of hindgut
+g2 <- ggplot(d, aes(x=factor(caste), y=hindGut_vol)) 
 g2 <- g2 + theme_classic()
 g2 <- g2 + geom_boxplot(outlier.colour=NA)
 g2 <- g2 + geom_jitter(size=1,aes(col=caste),shape=16)
-g2 <- g2 + xlab("Caste") + ylab("Volume of midgut (mm^3)") + ylim(0,NA)
+g2 <- g2 + xlab("Caste") + ylab("Volume of hindgut (mm^3)") + ylim(0,0.8)
 
-# hindgut
-g3 <- ggplot(d, aes(x=factor(caste), y=hindGut_vol)) 
+# volume ratio of midgut to hindgut
+g3 <- ggplot(d, aes(x=factor(caste), y=mGut_ratio)) 
 g3 <- g3 + theme_classic()
 g3 <- g3 + geom_boxplot(outlier.colour=NA)
 g3 <- g3 + geom_jitter(size=1,aes(col=caste),shape=16)
-g3 <- g3 + xlab("Caste") + ylab("Volume of hindgut (mm^3)") + ylim(0,0.8)
+g3 <- g3 + xlab("Caste") + ylab("Volume ratio of midgut to hindgut") + ylim(0,1)
 
-# 保存
-gset <- g2/(g1|g3)
+# file saving
+gset <- g1|g2|g3
 gset
-ggsave(plot=gset, height=6, width=6, dpi=200, filename="example.pdf", useDingbats=FALSE)
-
-# Testis & Ovary volume regression
-dpk <- subset(d,d$caste=="PK")
-g4 <- ggplot(dpk, aes(x=midGut_vol, y=R_ave_vol))
-g4 <- g4 + geom_point()
-g4 <- g4 + geom_smooth(method=lm)
-g4 <- g4 + xlab("Midgut volume (mm^3)") + ylab("Testis volume (mm^3)")
-g4
-
-dsq <- subset(d,d$caste=="SQ")
-g5 <- ggplot(dsq, aes(x=midGut_vol, y=R_ave_vol))
-g5 <- g5 + geom_point()
-g5 <- g5 + geom_smooth(method=lm)
-g5 <- g5 + xlab("Midgut volume (mm^3)") + ylab("Ovary volume (mm^3)")
-g5
-
+ggsave(plot=gset, height=6, width=6, dpi=200, filename="Fig4i,j,k.pdf", useDingbats=FALSE)
 ```
 
-### 統計処理
+### statistical analysis
 ```{r}
-## midGut proportionについて処理
+## for volume ratio of midgut to hindgut
 # GLMM
 res1 <- lmer(mGut_ratio ~ body_weight + caste + (1|colony), data=d)
 summary(res1)
@@ -84,21 +64,7 @@ anova(fit1, fit2, test="Chisq") #尤度比検定
 res2 <- glht(res1, linfct=mcp(caste="Tukey"))
 summary(res2)
 
-
-# TukeyHSD
-model.aov <- aov(mGut_ratio ~ body_weight + caste, data=d)
-anova(model.aov)
-TukeyHSD(model.aov, conf.level = 0.95)
-
-```
-
-
-```{r}
-# Shapiro-Wilk test (H0:標本分布が正規分布に従うこと)
-shapiro.test(d$midGut_vol)   # midGutについて
-shapiro.test(d$hindGut_vol)　# hindGutについて
-
-## Volume of midGutについて処理
+## for volume of midgut
 # GLMM
 res3 <- glmer(midGut_vol ~ body_weight + caste + (1|colony), family="Gamma", data=d)
 summary(res3)
@@ -110,7 +76,7 @@ anova(fit3, fit4, test="Chisq") #尤度比検定
 res4 <- glht(res3, linfct=mcp(caste="Tukey"))
 summary(res4)
 
-## Volume of hindGutについて処理
+## volume of hindgut
 # GLMM
 res5 <- glmer(hindGut_vol ~ body_weight + caste + (1|colony), family="Gamma", data=d)
 summary(res5)
@@ -121,6 +87,5 @@ anova(fit5, fit6, test="Chisq") #尤度比検定
 # post-hoc test
 res6 <- glht(res5, linfct=mcp(caste="Tukey"))
 summary(res6)
-
 ```
 
