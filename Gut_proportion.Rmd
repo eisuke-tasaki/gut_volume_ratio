@@ -1,7 +1,7 @@
 ---
 title: "Gut_proportion"
 author: "Eisuke Tasaki"
-date: "10/7/2022"
+date: "6/13/2023"
 output: html_document
 ---
 
@@ -16,8 +16,8 @@ library(patchwork)
 
 ### Data loading
 ```{r}
-# reading excel file (see supplementary Data 4 in a paper "The royal food of termites")
-d <- read_excel("Supplementary Data 4.xlsx", sheet="Sheet1")
+# reading excel file (see Dataset S2 in a paper "The royal food of termites shows king and queen specificity")
+d <- read_excel("Dataset S2.xlsx", sheet="Sheet1")
 d <- transform(d, caste=factor(caste, levels = c("mW","fW","mSol","fSol","PK","SQ")))
 ```
 
